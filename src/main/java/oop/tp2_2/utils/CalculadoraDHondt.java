@@ -47,39 +47,39 @@ public class CalculadoraDHondt
        PriorityQueue<Quociente> filaQuociente = new PriorityQueue<>(new ComparadorQuociente());
        Map<Partido, Integer> alocacaoAssentos = new HashMap<>();
        
-       // Inicializa a alocação de assentos e filtra os partidos elegíveis 
+       // Inicializa a alocação de assentos e filtra os partidos elegíveis com base no limite estabelecido
        List<Partido> partidosElegiveis = new ArrayList<>();
        for (Partido partido : partidos)
        {
-           alocacaoAssentos.put(partido, 0); //
+           alocacaoAssentos.put(partido, 0); // Inicializa todos os partidos sem assentos alocados (0 assentos).
            if (partido.getVotos() >= votosMargemMin)
            {
-               partidosElegiveis.add(partido); //
+               partidosElegiveis.add(partido); // Apenas partidos que cumpre com o limite minímo são elegíveis.
            }
        }
        
-       //
-       
+       // Inicializa a fila de quocientes com os quocientes iniciais
+       // ( # votos / 1) para todos os partidos elegíveis
        for (Partido partido : partidosElegiveis)
        {
            double quociente = (double) partido.getVotos() / 1; //
            filaQuociente.offer(new Quociente(partido, quociente, 1));
        }
        
-       //
+       // Alocação de assentos de acordo com o método D'Hondt - cada iteração aloca um assento
        for (int assento = 1; assento <= assentosTotal; assento++)
        {
            Quociente maior = filaQuociente.poll();
            if (maior == null)
            {
-               break; //
+               break; // Verificação de segurança para determinar se não são necessários mais quocientes.
            }
            
            Partido partidoVencedor = maior.getPartido();
-           //
+           // Incrementa a contagem do número de assentos para o partido vencedor. 
            alocacaoAssentos.put(partidoVencedor, alocacaoAssentos.get(partidoVencedor) + 1);
            
-           //
+           // Calcula o próximo quociente para um dado partido com um divisor incrementado.
            int divisorSeguinte = maior.getDivisor() + 1;
            double quocienteSeguinte = (double) partidoVencedor.getVotos() / divisorSeguinte;
            filaQuociente.offer(new Quociente(partidoVencedor, quocienteSeguinte, divisorSeguinte));
@@ -89,7 +89,8 @@ public class CalculadoraDHondt
    }
    
    /**
-    * 
+    * Aplica a alocação de assentos calculada, aos objetos Partido
+    * @param alocacaoAssentos Mapa que contém a alocação de assentos (assento para partido).
     */
    public static void aplicaAlocacaoAssentos(Map<Partido, Integer> alocacaoAssentos)
    {
