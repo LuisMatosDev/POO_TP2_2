@@ -119,7 +119,8 @@ public class Main
     
     /**
      * Executa uma análise comparativa compreensiva entre os cenários com e sem coligações.
-     * Executa duas simulações em separado e providencia 
+     * Executa duas simulações em separado e providencia uma comparação detalhada dos resultados.
+     * Este método demonstra a vantagem estratégica da formação de coligações.
      */
     private static void executaAnaliseComparativa()
     {
