@@ -165,7 +165,14 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Realiza a análise comparativa entre cenários com e sem coligações.
+     * Executa duas simulações separadas e mostra os resultados lado a lado para efeitos de demonstração
+     * das vantagens de formar uma coligação no sistema de distribuição D'Hondt.
      * 
+     * @param comPartidosColigados Lista dos partidos no cenário com coligação.
+     * @param semPartidosColigados Lista dos partidos no cenário sem coligação.
+     * @param totalAssentos Número total de assentos parlamentares.
+     * @param totalVotos Número total de votos lançados.
      */
     public static void realizaAnaliseComparativa(List<Partido> comPartidosColigados,
             List<Partido> semPartidosColigados, int totalAssentos, int totalVotos)
@@ -174,20 +181,20 @@ public class AnalisadorEleicao
         System.out.println("ANÁLISE COMPARATIVA: CENÁRIO COM COLIGAÇÃO VS. SEM COLIGAÇÃO");
         System.out.println("=".repeat(80));
         
-        //
+        // Mostra o cabeçalho da tabela comparativa
         System.out.println("\nCOMPARAÇÃO DE RESULTADOS:");
         System.out.println("Partido   |    Com Coligação    |    Sem Coligação    |  Diferença  |  Vantagem  |");
         System.out.println("----------|---------------------|---------------------|-------------|------------|");
         
-        //
+        // Cria os mapas para melhor visualização dos assentos em ambos os cenários
         Map<String, Integer> assentosColigacao = criaMapaAssentos(comPartidosColigados);
         Map<String, Integer> semAssentosColigacao = criaMapaAssentos(semPartidosColigados);
         
-        //
+        // Monitoriza o número total de assentos para efeitos de sumário
         int totalAssentosColigacao = 0;
         int totalAssentosSemColigacao = 0;
         
-        //
+        // Mostra a comparação para cada partido
         for (Partido partido : comPartidosColigados)
         {
             String nomePartido = partido.getNome();
@@ -204,17 +211,20 @@ public class AnalisadorEleicao
                     contagemAssentosColigacao, contagemAssentosSemColigacao, diferenca, vantagem);
         }
         
-        //
+        // Mostra o sumário das estatísticas coletadas durante a execução de ambas as simulações
         mostraSumarioComparativo(totalAssentosColigacao, totalAssentosSemColigacao, comPartidosColigados,
                                     semPartidosColigados);
         
-        //
+        // Mostra as perceções chave da comparação
         mostraPercepcaoComparativa(comPartidosColigados, semPartidosColigados, assentosColigacao,
                                         semAssentosColigacao);
     }
     
     /**
+     * Cria o mapa de nomes de partidos para número de assentos para uma fácil comparação.
      * 
+     * @param partidos Lista dos partidos da qual vamos criar o mapa
+     * @return O mapa contendo o nomes dos partidos como chaves e a contagem de assentos como valores
      */
     private static Map<String, Integer> criaMapaAssentos(List<Partido> partidos)
     {
