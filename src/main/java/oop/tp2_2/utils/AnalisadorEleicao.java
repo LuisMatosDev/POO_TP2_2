@@ -237,7 +237,10 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Calcula com auxilio a um indicador visual a vantagem/desvantagem na alocação de assentos.
      * 
+     * @param diferenca A diferenca de assentos entre cenários
+     * @return Indicador em formato cadeia indicando vantagem (↑), desvantagem (↓), ou neutro/sem alteração (=)
      */
     private static String calculaIndicadorVantagem(int diferenca)
     {
@@ -256,7 +259,13 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Mostra um sumário comparativo entre ambos os cenários.
+     * Mostra o total de assentos, contagens dos partidos, e o impacto do sistema no geral.
      * 
+     * @param totalColigacao Total de assentos num cenário com coligação
+     * @param totalSemColigacao Total de assentos num cenário sem coligação
+     * @param comPartidosColigados Lista de partidos num cenário com coligação
+     * @param semPartidosColigados Lista de partidos num cenário sem coligação
      */
     private static void mostraSumarioComparativo(int totalColigacao, int totalSemColigacao,
                                                     List<Partido> comPartidosColigados,
@@ -271,7 +280,7 @@ public class AnalisadorEleicao
         System.out.printf("Número de partidos (com coligação): %d%n", comPartidosColigados.size());
         System.out.printf("Número de partidos (sem coligação): %d%n", semPartidosColigados.size());
         
-        //
+        // Calcula e mostra as métricas de eficiência
         double eficienciaComColigacao = calculaMediaEficiencia(comPartidosColigados);
         double eficienciaSemColigacao = calculaMediaEficiencia(semPartidosColigados);
         
@@ -280,7 +289,11 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Calcula o rácio de eficiência médio de todos os partidos num dado cenário.
+     * Rácio de eficiência = (% de assentos) / (% de votos)
      * 
+     * @param partidos Lista de partidos para os quais vamos realizar o cálculo da eficiência média.
+     * @return Rácio de eficiência médio
      */
     private static double calculaMediaEficiencia(List<Partido> partidos)
     {
@@ -306,7 +319,13 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Mostra perceções chave e observações da análise comparativa.
+     * Destaca as implicações estratégicas da formação de uma coligação.
      * 
+     * @param partidosComColigacao Lista dos partidos num cenário com coligação
+     * @param partidosSemColigacao Lista dos partidos num cenário sem coligação
+     * @param assentosColigacao Mapa de assentos para o cenário com coligação
+     * @param assentosSemColigacao Mapa de assentos para o cenário sem coligação
      */
     private static void mostraPercepcaoComparativa(List<Partido> partidosComColigacao,
             List<Partido> partidosSemColigacao, Map<String, Integer> assentosColigacao,
@@ -316,14 +335,14 @@ public class AnalisadorEleicao
         System.out.println("OBSERVAÇÕES ESTRATÉGICAS:");
         System.out.println("~".repeat(80));
         
-        //
+        // Pesquisa pela coligação de forma a analisar o seu impacto
         Partido coligacao = encontraPartidoColigacao(partidosComColigacao);
         if (coligacao != null)
         {
             String nomeColigacao = coligacao.getNome();
             int contagemAssentosColigacao = assentosColigacao.getOrDefault(nomeColigacao, 0);
             
-            //
+            // Calcula o número de assentos que cada membro da coligação obteria se concorresse em separado
             int totalAssentosSeparados = 0;
             for (String membro : coligacao.getMembrosColigacao())
             {
@@ -349,15 +368,18 @@ public class AnalisadorEleicao
             }
         }
         
-        //
+        // Analisa o efeito das restrições definidas para ambos os cenários
         analisaEfeitoRestricoes(partidosComColigacao, partidosSemColigacao);
         
-        //
+        // Analisa a vantagem obtida pelos partidos grandes em comparação com os pequenos para ambos os cenários
         analisaVantagemPartidosMaiores(partidosComColigacao, partidosSemColigacao);
     }
     
     /**
+     * Pesquisa e encontra a coligação na lista de partidos, se esta existir.
      * 
+     * @param partidos Lista dos partidos, para efeitos de pesquisa
+     * @return A coligação se esta existir, ou nulo no caso de não existirem coligações 
      */
     private static Partido encontraPartidoColigacao(List<Partido> partidos)
     {
@@ -372,7 +394,11 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Analisa e mostra o impacto dos limites eleitorais definidos em ambos os cenários.
+     * Mostra como os limites eleitorais têm efeitos diferentes em partidos pequenos.
      * 
+     * @param partidosComColigacao Lista dos partidos no cenário com coligação
+     * @param partidosSemColigação Lista dos partidos no cenário sem coligação
      */
     private static void analisaEfeitoRestricoes(List<Partido> partidosComColigacao,
             List<Partido> partidosSemColigacao)
@@ -381,7 +407,7 @@ public class AnalisadorEleicao
         
         System.out.println("\n2. EFEITO DO LIMITE ELEITORAL (1.75%):");
         
-        //
+        // Realiza uma contagem dos partidos abaixo do limite eleitoral em ambos os cenários
         long abaixoLimiteComColigacao = partidosComColigacao.stream()
                 .filter(p -> p.getVotos() < limiteVotosMin && p.getAssentos() == 0).count();
         
@@ -399,14 +425,18 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Analisa a forma como os partidos grandes são favorecidos em ambos os cenários.
+     * Compara o rácio de eficiência entre partidos pequenos e partidos grandes.
      * 
+     * @param partidosComColigacao Lista dos partidos no cenário com coligação
+     * @param partidosSemColigacao Lista dos partidos no cenário sem coligação
      */
     private static void analisaVantagemPartidosMaiores(List<Partido> partidosComColigacao,
             List<Partido> partidosSemColigacao)
     {
         System.out.println("\n3. FAVORECIMENTO DE PARTIDOS GRANDES:");
         
-        //
+        // Calcula a eficiência dos dois primeiros partidos contra todos os outros, em ambos os cenários
         double[] eficienciaColigacao = calculaEficienciaTopoVsFundo(partidosComColigacao);
         double[] eficienciaSemColigacao = calculaEficienciaTopoVsFundo(partidosSemColigacao);
         
@@ -427,11 +457,14 @@ public class AnalisadorEleicao
     }
     
     /**
+     * Calcula o rácio de eficiência dos dois primeiros partidos contra todos os outros.
      * 
+     * @param partidos Lista dos partidos para os quais vamos realizar o cálculo/análise.
+     * @return O vetor onde [0] = a eficiência dos dois primeiros partidos, [1] = a eficiência dos outros partidos.
      */
     private static double[] calculaEficienciaTopoVsFundo(List<Partido> partidos)
     {
-        //
+        // Ordena os partidos pelo número de votos de forma descendente
         List<Partido> ordenado = partidos.stream()
                 .sorted((p1, p2) -> Integer.compare(p2.getVotos(), p1.getVotos())).toList();
         
@@ -449,12 +482,12 @@ public class AnalisadorEleicao
                 double percentagemVotos = (partido.getVotos() * 100.0 / TOTAL_VOTOS);
                 double eficiencia = (percentagemVotos > 0) ? percentagemAssentos / percentagemVotos : 0;
                 
-                if(i < 2) //
+                if(i < 2) // Dois primeiros partidos
                 {
                     eficienciaTopo += eficiencia;
                     contagemTopo++;
                 }
-                else //
+                else // Outros partidos
                 {
                     eficienciaFundo += eficiencia;
                     contagemFundo++;
