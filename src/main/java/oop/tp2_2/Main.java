@@ -7,18 +7,23 @@ import oop.tp2_2.utils.ValidadorEleicao;
 import java.util.*;
 
 /**
- *
+ * Classe principal da aplicação para a simulação eleitoral do Parlamento da República Portuguesa.
+ * Orquestra todo o processo de cálculo do método de distribuição proporcional D'Hondt e demonstra os
+ * princípios eleitorais chave.
+ * Esta classe é utilizada como ponto de entrada na aplicação
+ * e coordena as operações entre todos os outros componentes.
  * @author Luis Matos
  */
 public class Main
 {
-    //
-    private static final int TOTAL_ASSENTOS = 230; //
-    private static final int TOTAL_VOTOS = 6000000; //
+    // Constantes eleitorais - Baseadas nos paramêtros específicos do Parlamento Português
+    private static final int TOTAL_ASSENTOS = 230; // Número total de assentos no Parlamento
+    private static final int TOTAL_VOTOS = 6000000; // Número total de votos tendo por base uma partipação de 60%
     
     /**
-     * 
-     * @param args 
+     * Método principal - ponto de entrada na aplicação.
+     * Executa uma análise comparativa detalhada por defeito.
+     * @param args Argumentos para a linha de comandos (não utilizado)
      */
     public static void main(String[] args) {
         System.out.println("=== SIMULAÇÃO DA ELEIÇÃO PARA O PARLAMENTO DA RÉPUBLICA PORTUGUESA ===");
@@ -34,68 +39,74 @@ public class Main
     }
     
     /**
-     * 
+     * Inicializa os partidos participantes com uma coligação formada para efeitos demonstrativos.
+     * Cria os partidos individuais e forma a coligação AD (PSD + CDS)
+     * @return Retorna a lista de objetos Partido incluindo a coligação 
      */
     private static List<Partido> inicializaPartidosComColigacao()
     {
-        List<Partido> partidos = new ArrayList();
+        // Criação dos partidos individualmente, em primeiro lugar
+        // Nota: Os partidos PSD e CDS são criados como objetos individuais para seguidamente criar a coligação
+        Partido ps = new Partido("PS", 1850000);
+        Partido psd = new Partido("PSD", 1820000);
+        Partido ch = new Partido("CH", 850000);
+        Partido il = new Partido("IL", 420000);
+        Partido be = new Partido("BE", 380000);
+        Partido pcp = new Partido("PCP", 350000);
+        Partido l = new Partido("L", 320000);
+        Partido pan = new Partido("PAN", 280000);
+        Partido cds = new Partido("CDS", 150000);
         
-        //
-        //
-        Partido ps = new Partido("PS", 1850000); //
-        Partido psd = new Partido("PSD", 1820000); //
-        Partido ch = new Partido("CH", 850000); //
-        Partido il = new Partido("IL", 420000); //
-        Partido be = new Partido("BE", 380000); //
-        Partido pcp = new Partido("PCP", 350000); //
-        Partido l = new Partido("L", 320000); //
-        Partido pan = new Partido("PAN", 280000); //
-        Partido cds = new Partido("CDS", 150000); //
+        // Criação da coligação recorrendo os objetos individuais previamente definidos
+        List<Partido> membrosColigacao = new ArrayList<>();
+        membrosColigacao.add(psd);
+        membrosColigacao.add(cds);
+        Partido coligacaoAD = new Partido("AD", membrosColigacao);
         
-        //
-        //
-        Partido coligacaoAD = new Partido("AD", Arrays.asList(psd, cds));
+        // Debug: Verificação da criação da coligação 
+        System.out.println("=== INICIALIZAÇÃO DE PARTIDO ===");
+        System.out.printf("Coligação '%s' criada com os seguintes membros: %s\n", 
+            coligacaoAD.getNome(), String.join(" + ", coligacaoAD.getMembrosColigacao()));
+        System.out.printf("Total de votos da coligação: %,d\n", (int) coligacaoAD.getVotos());
+        System.out.println();
         
-        //
-        
+        // Adicionar todos os partidos à lista final (incluindo a coligação, mas excluíndo os membros individuais
+        // que a compõem)
+        List<Partido> partidos = new ArrayList<>();
         partidos.add(ps);
-        partidos.add(coligacaoAD);
+        partidos.add(coligacaoAD); // Adicionamos a coligação AD (Aliança Democrática) em vez dos partidos individuais
         partidos.add(ch);
         partidos.add(il);
         partidos.add(be);
         partidos.add(pcp);
         partidos.add(l);
         partidos.add(pan);
-        //
-        
-        //
-        System.out.println("=== INICIALIZAÇÃO DE PARTIDO ===");
-        System.out.printf("Coligação '%s' criada com os seguintes membros: %s\n", 
-            coligacaoAD.getNome(), String.join(" + ", coligacaoAD.getMembrosColigacao()));
-        System.out.printf("Total de votos da coligação: %,d\n", (int) coligacaoAD.getVotos());
-        System.out.println();
-                
+        // Nota: Os partidos membros da coligação não são adicionados individualmente pois já se encontram
+        // presentes no objeto coligação
+               
         return partidos;
     }
     
     /**
-     * 
+     * Inicializa os partidos participantes sem coligações para efeitos demonstrativos.
+     * Todos os partidos concorrem a título individual para providenciar uma base para comparação.
+     * @return Lista dos objetos Partido sem coligações criadas
      */
     private static List<Partido> inicializaPartidosSemColigacao()
     {
         List<Partido> partidos = new ArrayList();
         
-        //
-        //
-        partidos.add(new Partido("PS", 1850000));
-        partidos.add(new Partido("PSD", 1820000));
-        partidos.add(new Partido("CH", 850000));
-        partidos.add(new Partido("IL", 420000));
-        partidos.add(new Partido("BE", 380000));
-        partidos.add(new Partido("PCP", 350000));
-        partidos.add(new Partido("L", 320000));
-        partidos.add(new Partido("PAN", 280000));
-        partidos.add(new Partido("CDS", 150000));
+        // Criação dos partidos individualmente, em primeiro lugar 
+        // Utilizamos a mesma alocação de votos presente no cenário de coligação para uma comparação justa.
+        partidos.add(new Partido("PS", 1850000)); // Partido Socialista
+        partidos.add(new Partido("PSD", 1820000)); // Partido Social Democrata
+        partidos.add(new Partido("CH", 850000)); // Chega
+        partidos.add(new Partido("IL", 420000)); // Iniciativa Liberal
+        partidos.add(new Partido("BE", 380000)); // Bloco de Esquerda
+        partidos.add(new Partido("PCP", 350000)); // Partido Comunista Português
+        partidos.add(new Partido("L", 320000)); // Livre
+        partidos.add(new Partido("PAN", 280000)); // Pessoas-Animais-Natureza
+        partidos.add(new Partido("CDS", 150000)); // CDS - Partido Popular
         
         System.out.println("=== INICIALIZAÇÃO DE PARTIDOS SEM COLIGAÇÃO ===");
         System.out.println("Todos os partidos concorrem individualmente.");
@@ -107,7 +118,8 @@ public class Main
     }
     
     /**
-     * 
+     * Executa uma análise comparativa compreensiva entre os cenários com e sem coligações.
+     * Executa duas simulações em separado e providencia 
      */
     private static void executaAnaliseComparativa()
     {
