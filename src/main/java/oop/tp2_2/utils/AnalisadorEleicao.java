@@ -4,6 +4,10 @@ import oop.tp2_2.models.Partido;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.TreeSet;
+import java.util.Set;
+import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * Providencia os métodos de análise e demonstração de forma a verificar a veracidade das afirmações-chave
@@ -180,24 +184,28 @@ public class AnalisadorEleicao
         System.out.println("\n" + "=".repeat(80));
         System.out.println("ANÁLISE COMPARATIVA: CENÁRIO COM COLIGAÇÃO VS. SEM COLIGAÇÃO");
         System.out.println("=".repeat(80));
+            
+        // Cria os mapas para melhor visualização dos assentos em ambos os cenários
+        Map<String, Integer> assentosColigacao = criaMapaAssentos(comPartidosColigados);
+        Map<String, Integer> semAssentosColigacao = criaMapaAssentos(semPartidosColigados);
         
+        // Criação de um conjunto combinado de todos os nomes dos partidos em ambos os cenários
+        Set<String> todosNomesPartidos = new TreeSet<>();
+        todosNomesPartidos.addAll(assentosColigacao.keySet());
+        todosNomesPartidos.addAll(semAssentosColigacao.keySet());
+
         // Mostra o cabeçalho da tabela comparativa
         System.out.println("\nCOMPARAÇÃO DE RESULTADOS:");
         System.out.println("Partido   |    Com Coligação    |    Sem Coligação    |  Diferença  |  Vantagem  |");
         System.out.println("----------|---------------------|---------------------|-------------|------------|");
         
-        // Cria os mapas para melhor visualização dos assentos em ambos os cenários
-        Map<String, Integer> assentosColigacao = criaMapaAssentos(comPartidosColigados);
-        Map<String, Integer> semAssentosColigacao = criaMapaAssentos(semPartidosColigados);
-        
         // Monitoriza o número total de assentos para efeitos de sumário
         int totalAssentosColigacao = 0;
         int totalAssentosSemColigacao = 0;
         
-        // Mostra a comparação para cada partido
-        for (Partido partido : comPartidosColigados)
+        // Mostra a comparação para cada partido no conjunto combinado
+        for (String nomePartido : todosNomesPartidos)
         {
-            String nomePartido = partido.getNome();
             int contagemAssentosColigacao = assentosColigacao.getOrDefault(nomePartido, 0);
             int contagemAssentosSemColigacao = semAssentosColigacao.getOrDefault(nomePartido, 0);
             int diferenca = contagemAssentosColigacao - contagemAssentosSemColigacao;
@@ -211,9 +219,14 @@ public class AnalisadorEleicao
                     contagemAssentosColigacao, contagemAssentosSemColigacao, diferenca, vantagem);
         }
         
+        // Debug: Verificação se o total de assentos corresponde ao esperado (230)
+        System.out.println("----------|---------------------|---------------------|-------------|------------|");
+        System.out.printf("%-9s | %13d | %13d | %9d | %s%n", "TOTAL", totalAssentosColigacao,
+                totalAssentosSemColigacao, totalAssentosColigacao - totalAssentosSemColigacao, "N/D");
+        
         // Mostra o sumário das estatísticas coletadas durante a execução de ambas as simulações
         mostraSumarioComparativo(totalAssentosColigacao, totalAssentosSemColigacao, comPartidosColigados,
-                                    semPartidosColigados);
+                                    semPartidosColigados, assentosColigacao, semAssentosColigacao);
         
         // Mostra as perceções chave da comparação
         mostraPercepcaoComparativa(comPartidosColigados, semPartidosColigados, assentosColigacao,
@@ -266,10 +279,14 @@ public class AnalisadorEleicao
      * @param totalSemColigacao Total de assentos num cenário sem coligação
      * @param comPartidosColigados Lista de partidos num cenário com coligação
      * @param semPartidosColigados Lista de partidos num cenário sem coligação
+     * @param assentosColigacao Mapa de assentos para o cenário com coligação
+     * @param assentosSemColigação Mapa de assentos para o cenário com coligação
      */
     private static void mostraSumarioComparativo(int totalColigacao, int totalSemColigacao,
                                                     List<Partido> comPartidosColigados,
-                                                    List<Partido> semPartidosColigados)
+                                                    List<Partido> semPartidosColigados,
+                                                    Map<String, Integer> assentosColigacao,
+                                                    Map<String, Integer> assentosSemColigacao)
     {
         System.out.println("\n" + "-".repeat(80));
         System.out.println("RESUMO ESTATÍSTICO DA ANÁLISE COMPARATIVA:");
@@ -280,6 +297,9 @@ public class AnalisadorEleicao
         System.out.printf("Número de partidos (com coligação): %d%n", comPartidosColigados.size());
         System.out.printf("Número de partidos (sem coligação): %d%n", semPartidosColigados.size());
         
+        // Calcula e mostra as vantagens das coligações utilizando as contagems reais de assentos
+        mostraSumarioVantagemColigacao(assentosColigacao, assentosSemColigacao);
+
         // Calcula e mostra as métricas de eficiência
         double eficienciaComColigacao = calculaMediaEficiencia(comPartidosColigados);
         double eficienciaSemColigacao = calculaMediaEficiencia(semPartidosColigados);
@@ -332,47 +352,151 @@ public class AnalisadorEleicao
             Map<String, Integer> assentosSemColigacao)
     {
         System.out.println("\n" + "~".repeat(80));
-        System.out.println("OBSERVAÇÕES ESTRATÉGICAS:");
+        System.out.println("OBSERVAÇÕES ESTRATÉGICAS BASEADAS EM DADOS REAIS:");
         System.out.println("~".repeat(80));
         
-        // Pesquisa pela coligação de forma a analisar o seu impacto
-        Partido coligacao = encontraPartidoColigacao(partidosComColigacao);
-        if (coligacao != null)
-        {
-            String nomeColigacao = coligacao.getNome();
-            int contagemAssentosColigacao = assentosColigacao.getOrDefault(nomeColigacao, 0);
-            
-            // Calcula o número de assentos que cada membro da coligação obteria se concorresse em separado
-            int totalAssentosSeparados = 0;
-            for (String membro : coligacao.getMembrosColigacao())
-            {
-                totalAssentosSeparados += assentosSemColigacao.getOrDefault(membro, 0);
-            }
-            
-            int vantagemColigacao = contagemAssentosColigacao + totalAssentosSeparados;
-            
-            System.out.println("1. IMPACTO DA COLIGAÇÃO:");
-            System.out.printf("  - %s obteve %d assentos como coligação%n", nomeColigacao,
-                    contagemAssentosColigacao);
-            System.out.printf("  - Os membros individuais teriam obtido %d assentos parlamentares separadamente%n",
-                    totalAssentosSeparados);
-            System.out.printf("  - Vantagem líquida da coligação: +%d assentos%n", vantagemColigacao);
-            
-            if (vantagemColigacao > 0)
-            {
-                System.out.println("  → CONCLUSÃO: A coligação foi estrategicamente vantajosa.");
-            }
-            else
-            {
-                System.out.println("  → CONCLUSÃO: A coligação não trouxe vantagem significativa.");
-            }
-        }
+        // Utilização dos dados reais relativos aos assentos em lugar de estimativas
+        mostraImpactoRealColigacao(assentosColigacao, assentosSemColigacao);
         
         // Analisa o efeito das restrições definidas para ambos os cenários
         analisaEfeitoRestricoes(partidosComColigacao, partidosSemColigacao);
         
         // Analisa a vantagem obtida pelos partidos grandes em comparação com os pequenos para ambos os cenários
         analisaVantagemPartidosMaiores(partidosComColigacao, partidosSemColigacao);
+    }
+    
+    /**
+     * Calcula e mostra a vantagem real da coligação tendo por base o número real da contagem de assentos.
+     * Compara os assentos obtidos pela coligação à soma de assentos obtida pelos seus partidos-membro no cenário
+     * sem coligação.
+     * 
+     * @param assentosColigacao Mapa de assentos para o cenário de coligação
+     * @param assentosSemColigação Mapa de assentos para o cenário sem coligação
+     */
+    private static void mostraSumarioVantagemColigacao(Map<String, Integer> assentosColigacao,
+                                                        Map<String, Integer> assentosSemColigacao)
+    {
+        // Pesquisa por e encontra a coligação e calcula a vantagem real
+        String nomeColigacao = encontraNomeColigacao(assentosColigacao, assentosSemColigacao);
+        
+        if (nomeColigacao != null)
+        {
+            int contagemAssentosColigacao = assentosColigacao.getOrDefault(nomeColigacao, 0);
+            
+            // Obter os membros individuais da coligação a partir dos dados disponíveis (AD = PSD + CDS)
+            List<String> membrosColigacao = obterMembrosColigacao(nomeColigacao);
+            
+            // Calcula o número de assentos obtido pelos membros da coligação num cenário sem coligação
+            int totalAssentosIndividuais = 0;
+            for (String membro : membrosColigacao)
+            {
+                totalAssentosIndividuais += assentosSemColigacao.getOrDefault(membro, 0);
+            }
+            
+            int vantagemColigacao = contagemAssentosColigacao - totalAssentosIndividuais;
+            
+            System.out.println("\nVANTAGEM REAL DA COLIGAÇÃO:");
+            System.out.printf(" %s (coligação):                 %d assentos%n", nomeColigacao,
+                    contagemAssentosColigacao);
+            System.out.printf(" %s (membros separados):         %d assentos%n",
+                    String.join(" + ", membrosColigacao), totalAssentosIndividuais);
+            System.out.printf(" Vantagem líquida da coligação: %+d assentos%n", vantagemColigacao);
+            
+            if (vantagemColigacao > 0)
+            {
+                System.out.println(" → A coligação foi estrategicamente vantajosa");
+            }
+            else if (vantagemColigacao < 0)
+            {
+                System.out.println(" → A coligação foi desvantajosa");
+            }
+            else
+            {
+                System.out.println(" → A coligação não teve impacto na distribuição de assentos");
+            }
+        }
+    }
+    
+    /**
+     * Este método auxiliar ajuda na pesquisa do nome da coligação
+     * 
+     * @param assentosColigacao Mapa dos assentos no cenário com coligação
+     * @param assentosSemColigacao Mapa dos assentos no cenário sem coligação
+     * @return Retorna o nome da coligação ou null se esta não existir
+     */
+    private static String encontraNomeColigacao(Map<String, Integer> assentosColigacao,
+                                                Map<String, Integer> assentosSemColigacao)
+    {
+        // Pesquisa por partidos que existem no cenário de coligação mas não no cenário sem coligação
+        for (String partido : assentosColigacao.keySet())
+        {
+            if (!assentosSemColigacao.containsKey(partido))
+            {
+                return partido; // Provalvemente obteremos a coligação aqui.
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Este método auxilia a mostragem do impacto real da coligação.
+     * 
+     * @param assentosColigacao Mapa dos assentos no cenário com coligação
+     * @param assentosSemColigacao Mapa dos assentos no cenário sem coligação
+     */
+     private static void mostraImpactoRealColigacao(Map<String, Integer> assentosColigacao,
+                                                    Map<String, Integer> assentosSemColigacao)
+     {
+         String nomeColigacao = encontraNomeColigacao(assentosColigacao, assentosSemColigacao);
+         
+         if(nomeColigacao != null)
+         {
+             List<String> membrosColigacao = obterMembrosColigacao(nomeColigacao);
+             int contagemAssentosColigacao = assentosColigacao.getOrDefault(nomeColigacao, 0);
+             int totalAssentosIndividuais = membrosColigacao.stream()
+                     .mapToInt(membro -> assentosSemColigacao.getOrDefault(membro, 0)).sum();
+             
+             System.out.println("1. IMPACTO REAL DA COLIGAÇÃO:");
+             System.out.printf("  - %s obteve %d assentos como coligação%n",
+                     nomeColigacao, contagemAssentosColigacao);
+             System.out.printf("  - Os membros individuais obtiveram %d assentos separadamente",
+                     totalAssentosIndividuais);
+             System.out.printf("  - Vantagem líquida real: %+d assentos%n",
+                     contagemAssentosColigacao - totalAssentosIndividuais);
+             
+             // Percepções estratégicas adicionais
+             if(contagemAssentosColigacao > totalAssentosIndividuais)
+             {
+                 System.out.println("  → ESTRATÉGIA BEM-SUCEDIDA: A coligação conquistou mais assentos");
+                 System.out.println("  → Os partidos beneficiaram da união de forças");
+             }
+             else if(contagemAssentosColigacao < totalAssentosIndividuais)
+             {
+                 System.out.println("  → ESTRATÉGIA INEFICAZ: A coligação perdeu assentos");
+                 System.out.println("  → Os partidos teriam melhor desempenho concorrendo separadamente");
+             }
+             else
+             {
+                 System.out.println("  → IMPACTO NEUTRO: A coligação não alterou o número de assentos");
+             }
+         }
+     }
+    
+    /**
+     * Este método retorna os membros de uma dada coligação.
+     * Como utilizamos valores pré-definidos sabemos qual a é a estrutura da nossa coligação.
+     * 
+     * @param nomeColigacao O nome da coligacao para a qual queremos obter os membros individuais.
+     * @return Lista dos nomes dos partidos membros da coligação
+     */
+    private static List<String> obterMembrosColigacao(String nomeColigacao)
+    {
+        // Com base na implementação atual, sabemos que a coligação AD é composta pelos membros PSD e CDS
+        if("AD".equals(nomeColigacao))
+        {
+            return Arrays.asList("PSD","CDS");
+        }
+        return new ArrayList<>();
     }
     
     /**
