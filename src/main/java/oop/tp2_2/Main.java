@@ -25,8 +25,9 @@ public class Main
      * Executa uma análise comparativa detalhada por defeito.
      * @param args Argumentos para a linha de comandos (não utilizado)
      */
-    public static void main(String[] args) {
-        System.out.println("=== SIMULAÇÃO DA ELEIÇÃO PARA O PARLAMENTO DA RÉPUBLICA PORTUGUESA ===");
+    public static void main(String[] args) 
+    {
+        System.out.println("\n=== SIMULAÇÃO DA ELEIÇÃO PARA O PARLAMENTO DA RÉPUBLICA PORTUGUESA ===");
         System.out.println("Método D'Hondt com Análise Comparativa de Coligações\n (Inclui Restrições Aplicadas ao Mundo Real)");
         System.out.println("=".repeat(70));
         
